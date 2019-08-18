@@ -8,8 +8,11 @@ from commons.serializers import RegionSerializer, SubjectSerializer, ActivitySer
 from users.serializers import UserSerializer, UserRoughList
 
 ActivityModel = Activity
+
+
 class CommentSerializer(serializers.ModelSerializer):
     created_by = UserRoughList(read_only=True)
+
     class Meta:
         model = Comment
         fields = [
@@ -29,6 +32,12 @@ class ImageSerializer(serializers.ModelSerializer):
             'id',
             'image'
         ]
+
+
+class CreateImageSerializer(serializers.ModelDurationField):
+    class Meta:
+        model = Image
+        fields = '__all__'
 
 
 class ReviewListSerializer(serializers.ModelSerializer):
@@ -60,9 +69,9 @@ class LikedReviewSerializer(serializers.ModelSerializer):
 class ReviewSerializer(serializers.ModelSerializer):
     user = UserSerializer(required=False)
     region = RegionSerializer(
-        many=True, source="region_reivews", required=False)
+        many=True, required=False)
     subject = SubjectSerializer(
-        many=True, source='subject_reivews', required=False)
+        many=True, required=False)
     activity = ActivitySerializer(
         many=True, required=False)
     comments = CommentSerializer(many=True, required=False)
@@ -91,9 +100,9 @@ class ReviewSerializer(serializers.ModelSerializer):
             activity_data = validated_data.pop('activity')
             regions_data = validated_data.pop('region')
             review = Review.objects.create(**validated_data)
-            
+
             for data in regions_data:
-                region, created = Region.objects.get(
+                region = Region.objects.get(
                     city=data['city'], town=data['town']
                 )
                 review.region.add(region)
@@ -104,7 +113,7 @@ class ReviewSerializer(serializers.ModelSerializer):
                 review.activity.add(activity)
 
             for data in subject_data:
-                subject, created = Subject.objects.get(
+                subject= Subject.objects.get(
                     id=data['id'])
                 review.subject.add(subject)
         except:
